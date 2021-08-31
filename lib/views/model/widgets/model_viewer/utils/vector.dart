@@ -41,7 +41,8 @@ class VectorUtils {
     VectorMath.Vector3 normVectorFaceToDraw =
         VectorUtils.calcNormVectorForFace(face);
     return VectorUtils.calcRadianAngleBetweenVectors(
-            normVectorFaceToDraw, camera.position) <
+                normVectorFaceToDraw, camera.direction)
+            .abs() <
         pi / 2;
   }
 }

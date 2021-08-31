@@ -13,9 +13,7 @@ class _ModelViewState extends State<ModelView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ModelViewer(
-        vertices: [],
-      ),
+      body: ModelViewer(),
     );
   }
 }
