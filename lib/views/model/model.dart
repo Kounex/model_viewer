@@ -13,7 +13,9 @@ class _ModelViewState extends State<ModelView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ModelViewer(),
+      body: ModelViewer(
+        objFileName: 'Sting-Sword-lowpoly.obj',
+      ),
     );
   }
 }

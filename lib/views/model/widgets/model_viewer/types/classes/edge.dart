@@ -1,5 +1,6 @@
-import 'package:model_viewer/views/model/widgets/model_viewer/classes/tuple.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
+
+import 'tuple.dart';
 
 class Edge {
   Tuple<VectorMath.Vector3, VectorMath.Vector3> vertices;

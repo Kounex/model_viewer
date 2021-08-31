@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:model_viewer/views/model/widgets/model_viewer/classes/camera.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
-import '../classes/face.dart';
+import '../types/classes/camera.dart';
+import '../types/classes/face.dart';
 
 class VectorUtils {
   // static VectorMath.Vector3 calcNormVector(VectorMath.Vector3 vector) {

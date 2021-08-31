@@ -1,12 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:model_viewer/views/model/widgets/model_viewer/types/enums/base_color.dart';
+import 'package:model_viewer/views/model/widgets/model_viewer/widgets/camera_light_bar.dart';
+import 'package:model_viewer/views/model/widgets/model_viewer/widgets/color_light_bar.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
-import 'classes/camera.dart';
-import 'classes/edge.dart';
-import 'classes/face.dart';
-import 'classes/light.dart';
-import 'classes/model.dart';
+import 'types/classes/camera.dart';
+import 'types/classes/edge.dart';
+import 'types/classes/face.dart';
+import 'types/classes/light.dart';
+import 'types/classes/model.dart';
 import 'model_painter.dart';
 
 class ModelViewer extends StatefulWidget {
@@ -31,12 +35,48 @@ class _ModelViewerState extends State<ModelViewer> {
   late Camera _camera;
   late Light _light;
 
-  late Model _model;
+  Future<Model>? _model;
 
-  Future<void> _loadModelFromOBJ(String fileName) async {
-    rootBundle.loadString('assets/models/$fileName');
+  bool _useLight = false;
+  bool _drawEdges = false;
 
-    //TODO: load and parse obj
+  bool _rainbowColor = false;
+  Color _color = BaseColor.indigo.color;
+
+  Future<Model> _loadModelFromOBJ(String fileName) async {
+    String objString = await rootBundle.loadString('assets/models/$fileName');
+
+    List<String> objSnippets = objString.split('\n');
+
+    List<VectorMath.Vector3> vertices = [];
+    List<Face> faces = [];
+
+    for (int i = 0; i < objSnippets.length; i++) {
+      String snippet = objSnippets[i].trim();
+
+      if (snippet.startsWith('v ')) {
+        List<String> vertex = snippet.split(' ');
+        vertices.add(VectorMath.Vector3(double.parse(vertex[1]),
+            double.parse(vertex[2]), double.parse(vertex[3])));
+      }
+
+      if (snippet.startsWith('f ')) {
+        List<String> face = snippet.split(' ');
+        List<Edge> edges = [];
+
+        for (int j = 1; j < face.length; j++) {
+          edges.add(Edge(
+              vertices[int.parse(face[j].split('/')[0]) - 1],
+              vertices[int.parse(
+                      face[j < face.length - 1 ? j + 1 : 1].split('/')[0]) -
+                  1]));
+        }
+
+        faces.add(Face(edges));
+      }
+    }
+
+    return Model(faces);
   }
 
   @override
@@ -49,9 +89,9 @@ class _ModelViewerState extends State<ModelViewer> {
     Model? model = this.widget.model;
 
     if (this.widget.objFileName != null) {
-      _loadModelFromOBJ(this.widget.objFileName!);
+      _model = _loadModelFromOBJ(this.widget.objFileName!);
     } else {
-      _model = model ??
+      _model = SynchronousFuture(model ??
           Model([
             Face(
               [
@@ -173,15 +213,12 @@ class _ModelViewerState extends State<ModelViewer> {
                 ),
               ],
             ),
-          ]);
+          ]));
     }
-
-    _camera.setFocusByModel(_model);
   }
 
   @override
   Widget build(BuildContext context) {
-    // print(_camera.position.z);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onScaleStart: (moveStart) => setState(() => _camera.moveStart(moveStart)),
@@ -189,49 +226,73 @@ class _ModelViewerState extends State<ModelViewer> {
       onScaleEnd: (moveEnd) => setState(() => _camera.moveEnd(moveEnd)),
       child: Stack(
         children: [
-          SizedBox.expand(
-            child: Center(
-              child: Transform.translate(
-                offset: _camera.translation,
-                child: Transform.scale(
-                  scale: _camera.scale,
-                  child: CustomPaint(
-                    painter: ModelPainter(
-                      camera: _camera,
-                      model: _model,
+          FutureBuilder<Model>(
+            future: _model,
+            builder: (context, modelSnapshot) {
+              if (modelSnapshot.connectionState == ConnectionState.done) {
+                if (modelSnapshot.hasData) {
+                  _camera.setFocusByModel(modelSnapshot.data!);
+
+                  return SizedBox.expand(
+                    child: Center(
+                      child: Transform.translate(
+                        offset: _camera.translation,
+                        child: Transform.scale(
+                          scale: _camera.scale,
+                          child: CustomPaint(
+                            painter: ModelPainter(
+                              camera: _camera,
+                              light: _useLight ? _light : null,
+                              drawEdges: _drawEdges,
+                              model: modelSnapshot.data!,
+                              color: _color,
+                              rainbowColor: _rainbowColor,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
+                  );
+                }
+                return Center(
+                  child: Text(
+                      'Error loading model\n\n${modelSnapshot.error!.toString()}'),
+                );
+              }
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            },
           ),
           Positioned(
             top: 32.0,
             left: 32.0,
             child: SafeArea(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 102.0,
-                    child: Text(
-                      'Camera\n   x: ${_camera.position.x.toStringAsFixed(2)}\n   y: ${_camera.position.y.toStringAsFixed(2)}\n   z: ${_camera.position.z.toStringAsFixed(2)}',
-                    ),
-                  ),
-                  SizedBox(
-                    width: 102.0,
-                    child:
-                        Text('Scale\n   ${_camera.scale.toStringAsFixed(2)}'),
-                  ),
-                  TextButton.icon(
-                    onPressed: () => setState(() => _camera.reset()),
-                    icon: Icon(Icons.restore),
-                    label: Text('Reset'),
-                  ),
-                ],
+              child: CameraLightBar(
+                camera: _camera,
+                onReset: () => setState(() => _camera.reset()),
               ),
             ),
-          )
+          ),
+          Positioned(
+            bottom: 32.0,
+            left: 32.0,
+            child: SafeArea(
+              child: ColorLightBar(
+                useLight: _useLight,
+                drawEdges: _drawEdges,
+                useRainbowColor: _rainbowColor,
+                color: _color,
+                onChangedUseLight: (value) =>
+                    setState(() => _useLight = value!),
+                onChangedDrawEdges: (value) =>
+                    setState(() => _drawEdges = value!),
+                onChangedUseRainbowColor: (value) =>
+                    setState(() => _rainbowColor = value!),
+                onChangedColor: (color) => setState(() => _color = color!),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -1,13 +1,14 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
-import 'classes/camera.dart';
-import 'classes/edge.dart';
-import 'classes/face.dart';
-import 'classes/light.dart';
-import 'classes/model.dart';
+import 'types/classes/camera.dart';
+import 'types/classes/edge.dart';
+import 'types/classes/face.dart';
+import 'types/classes/light.dart';
+import 'types/classes/model.dart';
 import 'utils/vector.dart';
 
 class ModelPainter extends CustomPainter {
@@ -16,10 +17,18 @@ class ModelPainter extends CustomPainter {
 
   final Model model;
 
+  final bool drawEdges;
+
+  final Color color;
+  final bool rainbowColor;
+
   ModelPainter({
     required this.camera,
     required this.model,
     this.light,
+    this.drawEdges = false,
+    this.color = Colors.purple,
+    this.rainbowColor = false,
   });
 
   @override
@@ -51,10 +60,32 @@ class ModelPainter extends CustomPainter {
           edgeCounter++;
         }
 
+        Color color = !this.rainbowColor
+            ? this.color
+            : Colors.primaries[faceCounter % Colors.primaries.length];
+
+        if (this.light != null) {
+          double darkness = (VectorUtils.calcRadianAngleBetweenVectors(
+                      VectorUtils.calcNormVectorForFace(face),
+                      this.light!.directionTo(face)) /
+                  (pi / 2))
+              .abs();
+
+          color = Color.alphaBlend(
+              color.withAlpha(darkness >= 1 ? 0 : (255 * darkness).floor()),
+              Colors.black);
+        }
+
         canvas.drawPath(
           facePath,
-          Paint()..color = Colors.primaries[faceCounter],
+          Paint()..color = color,
         );
+
+        if (this.drawEdges)
+          canvas.drawPath(
+            facePath,
+            Paint()..style = PaintingStyle.stroke,
+          );
       }
       faceCounter++;
     }
