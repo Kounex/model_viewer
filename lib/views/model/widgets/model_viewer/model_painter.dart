@@ -33,8 +33,16 @@ class ModelPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    List<Face> sortedFaces = [...this.model.faces]..sort((f1, f2) =>
+        VectorUtils.centerFace(f2)
+            .distanceToSquared(this.camera.position)
+            .round() -
+        VectorUtils.centerFace(f1)
+            .distanceToSquared(this.camera.position)
+            .round());
+
     int faceCounter = 0;
-    for (Face face in this.model.faces) {
+    for (Face face in sortedFaces) {
       if (VectorUtils.isFaceVisible(this.camera, face)) {
         Path facePath = Path();
 
@@ -51,6 +59,7 @@ class ModelPainter extends CustomPainter {
 
           if (edgeCounter == 0) {
             facePath.moveTo(vertex1.x, vertex1.y);
+            facePath.lineTo(vertex2.x, vertex2.y);
           } else if (edgeCounter == lastEdgeIndex) {
             facePath.close();
           } else {
@@ -72,8 +81,9 @@ class ModelPainter extends CustomPainter {
               .abs();
 
           color = Color.alphaBlend(
-              color.withAlpha(darkness >= 1 ? 0 : (255 * darkness).floor()),
-              Colors.black);
+            color.withAlpha(darkness >= 1 ? 0 : (255 * (1 - darkness)).floor()),
+            Colors.black,
+          );
         }
 
         canvas.drawPath(

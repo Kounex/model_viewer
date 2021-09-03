@@ -2,26 +2,32 @@ import 'package:flutter/material.dart';
 
 import '../types/enums/base_color.dart';
 
-class ColorLightBar extends StatelessWidget {
-  final bool useLight;
+class PropertiesBar extends StatelessWidget {
+  final bool rotateLight;
+  final bool lightFromCamera;
+
   final bool drawEdges;
   final bool useRainbowColor;
 
   final Color color;
 
-  final void Function(bool?)? onChangedUseLight;
+  final void Function(bool?)? onChangedRotateLight;
+  final void Function(bool?)? onChangedLightFromCamera;
+
   final void Function(bool?)? onChangedDrawEdges;
   final void Function(bool?)? onChangedUseRainbowColor;
 
   final void Function(Color?)? onChangedColor;
 
-  const ColorLightBar({
+  const PropertiesBar({
     Key? key,
-    required this.useLight,
+    required this.rotateLight,
+    required this.lightFromCamera,
     required this.drawEdges,
     required this.useRainbowColor,
     required this.color,
-    this.onChangedUseLight,
+    this.onChangedRotateLight,
+    this.onChangedLightFromCamera,
     this.onChangedDrawEdges,
     this.onChangedUseRainbowColor,
     this.onChangedColor,
@@ -35,17 +41,34 @@ class ColorLightBar extends StatelessWidget {
         Row(
           children: [
             SizedBox(
-              width: 128,
+              width: 152,
               child: CheckboxListTile(
-                value: this.useLight,
-                onChanged: this.onChangedUseLight,
-                title: Text('Light'),
+                value: this.rotateLight,
+                onChanged: this.onChangedRotateLight,
+                title: Text('Rotate Light'),
                 dense: true,
                 contentPadding: EdgeInsets.all(0),
                 activeColor: Colors.lightBlue,
                 controlAffinity: ListTileControlAffinity.leading,
               ),
             ),
+            SizedBox(
+              width: 192,
+              child: CheckboxListTile(
+                value: this.lightFromCamera,
+                onChanged: this.onChangedLightFromCamera,
+                title: Text('Light from camera'),
+                dense: true,
+                contentPadding: EdgeInsets.all(0),
+                activeColor: Colors.lightBlue,
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
             SizedBox(
               width: 192,
               child: CheckboxListTile(

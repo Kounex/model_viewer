@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:model_viewer/views/model/widgets/model_viewer/types/enums/base_color.dart';
 import 'package:model_viewer/views/model/widgets/model_viewer/widgets/camera_light_bar.dart';
-import 'package:model_viewer/views/model/widgets/model_viewer/widgets/color_light_bar.dart';
+import 'package:model_viewer/views/model/widgets/model_viewer/widgets/properties_bar.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
 import 'types/classes/camera.dart';
@@ -40,8 +40,13 @@ class _ModelViewerState extends State<ModelViewer> {
   bool _useLight = false;
   bool _drawEdges = false;
 
+  bool _rotateLight = false;
+  bool _lightFromCamera = false;
+
   bool _rainbowColor = false;
   Color _color = BaseColor.indigo.color;
+
+  bool _fullscreen = false;
 
   Future<Model> _loadModelFromOBJ(String fileName) async {
     String objString = await rootBundle.loadString('assets/models/$fileName');
@@ -222,8 +227,10 @@ class _ModelViewerState extends State<ModelViewer> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onScaleStart: (moveStart) => setState(() => _camera.moveStart(moveStart)),
-      onScaleUpdate: (move) => setState(() => _camera.move(move)),
+      onScaleUpdate: (move) => setState(() =>
+          _camera.move(move, _rotateLight ? _light : null, _lightFromCamera)),
       onScaleEnd: (moveEnd) => setState(() => _camera.moveEnd(moveEnd)),
+      onDoubleTap: () => setState(() => _fullscreen = !_fullscreen),
       child: Stack(
         children: [
           FutureBuilder<Model>(
@@ -264,35 +271,46 @@ class _ModelViewerState extends State<ModelViewer> {
               );
             },
           ),
-          Positioned(
-            top: 32.0,
-            left: 32.0,
-            child: SafeArea(
-              child: CameraLightBar(
-                camera: _camera,
-                onReset: () => setState(() => _camera.reset()),
+          if (!_fullscreen)
+            Positioned(
+              top: 24.0,
+              left: 24.0,
+              child: SafeArea(
+                child: CameraLightBar(
+                  camera: _camera,
+                  light: _light,
+                  useLight: _useLight,
+                  onChangedUseLight: (value) =>
+                      setState(() => _useLight = value!),
+                  onReset: () => setState(() => _camera.reset()),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 32.0,
-            left: 32.0,
-            child: SafeArea(
-              child: ColorLightBar(
-                useLight: _useLight,
-                drawEdges: _drawEdges,
-                useRainbowColor: _rainbowColor,
-                color: _color,
-                onChangedUseLight: (value) =>
-                    setState(() => _useLight = value!),
-                onChangedDrawEdges: (value) =>
-                    setState(() => _drawEdges = value!),
-                onChangedUseRainbowColor: (value) =>
-                    setState(() => _rainbowColor = value!),
-                onChangedColor: (color) => setState(() => _color = color!),
+          if (!_fullscreen)
+            Positioned(
+              bottom: 18.0,
+              left: 18.0,
+              child: SafeArea(
+                child: PropertiesBar(
+                  rotateLight: _rotateLight,
+                  lightFromCamera: _lightFromCamera,
+                  drawEdges: _drawEdges,
+                  useRainbowColor: _rainbowColor,
+                  color: _color,
+                  onChangedRotateLight: (value) =>
+                      setState(() => _rotateLight = value!),
+                  onChangedLightFromCamera: (value) => setState(() {
+                    _light.position = VectorMath.Vector3.copy(_camera.position);
+                    _lightFromCamera = value!;
+                  }),
+                  onChangedDrawEdges: (value) =>
+                      setState(() => _drawEdges = value!),
+                  onChangedUseRainbowColor: (value) =>
+                      setState(() => _rainbowColor = value!),
+                  onChangedColor: (color) => setState(() => _color = color!),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
 import 'edge.dart';
 import 'face.dart';
+import 'light.dart';
 import 'model.dart';
 
 class Camera {
@@ -53,13 +54,18 @@ class Camera {
     this._scaleRun = 1.0;
   }
 
-  void move(ScaleUpdateDetails move) {
+  void move(ScaleUpdateDetails move, [Light? light, bool rotateLight = false]) {
     if (move.pointerCount == 1 && _scaleUpdateRun != null) {
       Offset moveOffset = move.focalPoint - _scaleUpdateRun!.focalPoint;
 
       if (moveOffset.distanceSquared > 0) {
-        this.position.applyQuaternion(VectorMath.Quaternion.euler(
-            moveOffset.dx / 100, moveOffset.dy / 100, 0));
+        VectorMath.Quaternion rotationQ = VectorMath.Quaternion.euler(
+            moveOffset.dx / 100, moveOffset.dy / 100, 0);
+
+        if (light == null || rotateLight)
+          this.position.applyQuaternion(rotationQ);
+
+        if (light != null) light.position.applyQuaternion(rotationQ);
       }
     }
     if (move.pointerCount == 2) {

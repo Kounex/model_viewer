@@ -3,12 +3,27 @@ import 'dart:math';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
 import '../types/classes/camera.dart';
+import '../types/classes/edge.dart';
 import '../types/classes/face.dart';
 
 class VectorUtils {
-  // static VectorMath.Vector3 calcNormVector(VectorMath.Vector3 vector) {
-  //   VectorMath.Vector3 anotherNotParallelVector = VectorMath.Vector3.
-  // }
+  /// Calculate the center of a face (position)
+  static VectorMath.Vector3 centerFace(Face face) {
+    int amountVertices = 0;
+    VectorMath.Vector3 runVector = VectorMath.Vector3.zero();
+
+    for (Edge edge in face.edges) {
+      runVector.add(edge.vertices.item1);
+      runVector.add(edge.vertices.item2);
+      amountVertices += 2;
+    }
+
+    return VectorMath.Vector3(
+      runVector.x / amountVertices,
+      runVector.y / amountVertices,
+      runVector.z / amountVertices,
+    );
+  }
 
   /// Calculate the norm vector for a face:
   ///   - create 2 direction vectors from the vertices of edges in the given face
