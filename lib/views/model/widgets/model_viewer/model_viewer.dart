@@ -227,8 +227,10 @@ class _ModelViewerState extends State<ModelViewer> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onScaleStart: (moveStart) => setState(() => _camera.moveStart(moveStart)),
-      onScaleUpdate: (move) => setState(() =>
-          _camera.move(move, _rotateLight ? _light : null, _lightFromCamera)),
+      onScaleUpdate: (move) => setState(() => _camera.move(
+          move,
+          _useLight && (_rotateLight || _lightFromCamera) ? _light : null,
+          _lightFromCamera)),
       onScaleEnd: (moveEnd) => setState(() => _camera.moveEnd(moveEnd)),
       onDoubleTap: () => setState(() => _fullscreen = !_fullscreen),
       child: Stack(
@@ -297,12 +299,20 @@ class _ModelViewerState extends State<ModelViewer> {
                   drawEdges: _drawEdges,
                   useRainbowColor: _rainbowColor,
                   color: _color,
-                  onChangedRotateLight: (value) =>
-                      setState(() => _rotateLight = value!),
-                  onChangedLightFromCamera: (value) => setState(() {
-                    _light.position = VectorMath.Vector3.copy(_camera.position);
-                    _lightFromCamera = value!;
+                  onChangedRotateLight: (value) => setState(() {
+                    _rotateLight = value!;
+                    if (_rotateLight) _lightFromCamera = false;
                   }),
+                  onChangedLightFromCamera: _useLight
+                      ? (value) => setState(() {
+                            _lightFromCamera = value!;
+                            if (_lightFromCamera) {
+                              _rotateLight = false;
+                              _light.position =
+                                  VectorMath.Vector3.copy(_camera.position);
+                            }
+                          })
+                      : null,
                   onChangedDrawEdges: (value) =>
                       setState(() => _drawEdges = value!),
                   onChangedUseRainbowColor: (value) =>

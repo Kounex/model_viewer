@@ -8,7 +8,7 @@ class Light {
 
   Light({required this.position});
 
-  Light.base() : this.position = VectorMath.Vector3(-10, -10, -10);
+  Light.base() : this.position = VectorMath.Vector3(-100, -100, -100);
 
   VectorMath.Vector3 directionTo(Face face) =>
       VectorUtils.centerFace(face)..sub(this.position);

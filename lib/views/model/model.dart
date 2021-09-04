@@ -18,7 +18,7 @@ class _ModelViewState extends State<ModelView> {
       resizeToAvoidBottomInset: false,
       body: ModelViewer(
         objFileName: 'Sting-Sword-lowpoly.obj',
-        camera: Camera(VectorMath.Vector3(5, -7, -10)),
+        camera: Camera(VectorMath.Vector3(50, -70, -100)),
       ),
     );
   }

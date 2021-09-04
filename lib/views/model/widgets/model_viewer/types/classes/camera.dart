@@ -22,7 +22,7 @@ class Camera {
       : initialPosition = VectorMath.Vector3.copy(position),
         focusPosition = VectorMath.Vector3.zero();
 
-  Camera.base() : this(VectorMath.Vector3(10, 10, -10));
+  Camera.base() : this(VectorMath.Vector3(100, 100, -100));
 
   VectorMath.Vector3 get direction =>
       VectorMath.Vector3.copy(this.focusPosition)..sub(this.position);
@@ -54,7 +54,8 @@ class Camera {
     this._scaleRun = 1.0;
   }
 
-  void move(ScaleUpdateDetails move, [Light? light, bool rotateLight = false]) {
+  void move(ScaleUpdateDetails move,
+      [Light? light, bool lightFromCamera = false]) {
     if (move.pointerCount == 1 && _scaleUpdateRun != null) {
       Offset moveOffset = move.focalPoint - _scaleUpdateRun!.focalPoint;
 
@@ -62,7 +63,7 @@ class Camera {
         VectorMath.Quaternion rotationQ = VectorMath.Quaternion.euler(
             moveOffset.dx / 100, moveOffset.dy / 100, 0);
 
-        if (light == null || rotateLight)
+        if (light == null || lightFromCamera)
           this.position.applyQuaternion(rotationQ);
 
         if (light != null) light.position.applyQuaternion(rotationQ);

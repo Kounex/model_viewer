@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../types/enums/base_color.dart';
@@ -11,7 +12,7 @@ class PropertiesBar extends StatelessWidget {
 
   final Color color;
 
-  final void Function(bool?)? onChangedRotateLight;
+  final void Function(bool?) onChangedRotateLight;
   final void Function(bool?)? onChangedLightFromCamera;
 
   final void Function(bool?)? onChangedDrawEdges;
@@ -26,7 +27,7 @@ class PropertiesBar extends StatelessWidget {
     required this.drawEdges,
     required this.useRainbowColor,
     required this.color,
-    this.onChangedRotateLight,
+    required this.onChangedRotateLight,
     this.onChangedLightFromCamera,
     this.onChangedDrawEdges,
     this.onChangedUseRainbowColor,
@@ -38,20 +39,43 @@ class PropertiesBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        AnimatedOpacity(
+          opacity: this.onChangedLightFromCamera != null ? 1.0 : 0,
+          duration: Duration(milliseconds: 300),
+          child: Row(
+            children: [
+              SizedBox(width: 10.0),
+              Text(
+                'Rotate',
+                style: Theme.of(context).textTheme.subtitle1,
+              ),
+              SizedBox(width: 24.0),
+              SizedBox(
+                  width: 152,
+                  child: CupertinoSlidingSegmentedControl<bool>(
+                    groupValue: this.rotateLight,
+                    onValueChanged: this.onChangedRotateLight,
+                    children: {
+                      false: Text('Camera'),
+                      true: Text('Light'),
+                    },
+                  )
+                  // CheckboxListTile(
+                  //   value: this.rotateLight,
+                  //   onChanged: this.onChangedRotateLight,
+                  //   title: Text('Rotate Light'),
+                  //   dense: true,
+                  //   contentPadding: EdgeInsets.all(0),
+                  //   activeColor: Colors.lightBlue,
+                  //   controlAffinity: ListTileControlAffinity.leading,
+                  // ),
+                  ),
+            ],
+          ),
+        ),
+        SizedBox(height: 12),
         Row(
           children: [
-            SizedBox(
-              width: 152,
-              child: CheckboxListTile(
-                value: this.rotateLight,
-                onChanged: this.onChangedRotateLight,
-                title: Text('Rotate Light'),
-                dense: true,
-                contentPadding: EdgeInsets.all(0),
-                activeColor: Colors.lightBlue,
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-            ),
             SizedBox(
               width: 192,
               child: CheckboxListTile(
@@ -64,11 +88,6 @@ class PropertiesBar extends StatelessWidget {
                 controlAffinity: ListTileControlAffinity.leading,
               ),
             ),
-          ],
-        ),
-        SizedBox(height: 12),
-        Row(
-          children: [
             SizedBox(
               width: 192,
               child: CheckboxListTile(
