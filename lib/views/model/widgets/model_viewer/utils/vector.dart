@@ -29,13 +29,11 @@ class VectorUtils {
   ///   - create 2 direction vectors from the vertices of edges in the given face
   ///   - return the cross prod which is the norm (orthogonal) vector of this face
   static VectorMath.Vector3 calcNormVectorForFace(Face face) {
-    VectorMath.Vector3 directionVector1 =
-        VectorMath.Vector3.copy(face.edges[0].vertices.item2)
-          ..sub(face.edges[0].vertices.item1);
+    VectorMath.Vector3 directionVector1 = face.edges[0].vertices.item2.xyz
+      ..sub(face.edges[0].vertices.item1);
 
-    VectorMath.Vector3 directionVector2 =
-        VectorMath.Vector3.copy(face.edges[1].vertices.item2)
-          ..sub(face.edges[1].vertices.item1);
+    VectorMath.Vector3 directionVector2 = face.edges[1].vertices.item2.xyz
+      ..sub(face.edges[1].vertices.item1);
 
     return directionVector2.cross(directionVector1);
   }

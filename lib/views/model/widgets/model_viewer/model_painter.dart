@@ -53,9 +53,10 @@ class ModelPainter extends CustomPainter {
               this.camera.focusPosition, VectorMath.Vector3(0, 1, 0));
 
           VectorMath.Vector3 vertex1 =
-              matrix.transform3(VectorMath.Vector3.copy(edge.vertices.item1));
+              matrix.transform3(edge.vertices.item1.xyz);
+
           VectorMath.Vector3 vertex2 =
-              matrix.transform3(VectorMath.Vector3.copy(edge.vertices.item2));
+              matrix.transform3(edge.vertices.item2.xyz);
 
           if (edgeCounter == 0) {
             facePath.moveTo(vertex1.x, vertex1.y);
@@ -85,6 +86,15 @@ class ModelPainter extends CustomPainter {
             Colors.black,
           );
         }
+
+        canvas.drawPath(
+          Path()
+            ..moveTo(1, 1)
+            ..lineTo(2, 3)
+            ..lineTo(4, 2)
+            ..close(),
+          Paint(),
+        );
 
         canvas.drawPath(
           facePath,

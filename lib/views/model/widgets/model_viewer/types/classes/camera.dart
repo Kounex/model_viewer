@@ -25,10 +25,10 @@ class Camera {
   Camera.base() : this(VectorMath.Vector3(100, 100, -100));
 
   VectorMath.Vector3 get direction =>
-      VectorMath.Vector3.copy(this.focusPosition)..sub(this.position);
+      this.focusPosition.xyz..sub(this.position);
 
   void reset() {
-    this.position = VectorMath.Vector3.copy(this.initialPosition);
+    this.position.xyz = this.initialPosition;
     this.scale = this.initialScale;
     this.translation = Offset.zero;
   }

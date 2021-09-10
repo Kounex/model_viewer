@@ -308,8 +308,7 @@ class _ModelViewerState extends State<ModelViewer> {
                             _lightFromCamera = value!;
                             if (_lightFromCamera) {
                               _rotateLight = false;
-                              _light.position =
-                                  VectorMath.Vector3.copy(_camera.position);
+                              _light.position.xyz = _camera.position;
                             }
                           })
                       : null,
