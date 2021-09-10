@@ -88,15 +88,6 @@ class ModelPainter extends CustomPainter {
         }
 
         canvas.drawPath(
-          Path()
-            ..moveTo(1, 1)
-            ..lineTo(2, 3)
-            ..lineTo(4, 2)
-            ..close(),
-          Paint(),
-        );
-
-        canvas.drawPath(
           facePath,
           Paint()..color = color,
         );
