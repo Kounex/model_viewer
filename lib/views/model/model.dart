@@ -15,7 +15,7 @@ class _ModelViewState extends State<ModelView> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: ModelViewer(
-        objFileName: 'Sting-Sword-lowpoly.obj',
+        objFileName: 'SM_Templa.obj',
       ),
     );
   }

@@ -207,7 +207,7 @@ class _ModelViewerState extends State<ModelViewer> {
       }
     }
 
-    return VectorMath.Vector3(0, 0, -highestZ * 1.5);
+    return VectorMath.Vector3(0, 0, -highestZ);
   }
 
   void _setupCameraAndLight(Model model) {

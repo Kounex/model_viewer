@@ -65,6 +65,11 @@ class Camera {
       Offset moveOffset = move.focalPoint - _scaleUpdateRun!.focalPoint;
 
       if (moveOffset.distanceSquared > 0) {
+        // VectorMath.Quaternion rotationQ = VectorMath.Quaternion.axisAngle(
+        //     VectorMath.Vector3(1, 0, 0), -moveOffset.dx / 1000)
+        //   ..add(VectorMath.Quaternion.axisAngle(
+        //       VectorMath.Vector3(0, 1, 0), -moveOffset.dy / 1000));
+
         VectorMath.Quaternion rotationQ = VectorMath.Quaternion.euler(
             -moveOffset.dx / 100, -moveOffset.dy / 100, 0);
 

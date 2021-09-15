@@ -52,11 +52,13 @@ class ModelPainter extends CustomPainter {
           Matrix4 matrix = VectorMath.makeViewMatrix(this.camera.position,
               this.camera.focusPosition, VectorMath.Vector3(0, 1, 0));
 
-          VectorMath.Vector3 vertex1 =
-              matrix.transform3(edge.vertices.item1.xyz);
+          VectorMath.Vector3 vertex1 = matrix
+              .transform3(edge.vertices.item1.xyz)
+            ..scale(30 / this.camera.position.length.abs());
 
-          VectorMath.Vector3 vertex2 =
-              matrix.transform3(edge.vertices.item2.xyz);
+          VectorMath.Vector3 vertex2 = matrix
+              .transform3(edge.vertices.item2.xyz)
+            ..scale(30 / this.camera.position.length.abs());
 
           if (edgeCounter == 0) {
             facePath.moveTo(vertex1.x, vertex1.y);
