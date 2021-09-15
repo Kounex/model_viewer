@@ -1,9 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:model_viewer/views/model/widgets/model_viewer/types/enums/base_color.dart';
-import 'package:model_viewer/views/model/widgets/model_viewer/widgets/camera_light_bar.dart';
-import 'package:model_viewer/views/model/widgets/model_viewer/widgets/properties_bar.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
 import 'types/classes/camera.dart';
@@ -11,7 +10,7 @@ import 'types/classes/edge.dart';
 import 'types/classes/face.dart';
 import 'types/classes/light.dart';
 import 'types/classes/model.dart';
-import 'model_painter.dart';
+import 'widgets/model_wrapper.dart';
 
 class ModelViewer extends StatefulWidget {
   final Model? model;
@@ -36,17 +35,6 @@ class _ModelViewerState extends State<ModelViewer> {
   late Light _light;
 
   Future<Model>? _model;
-
-  bool _useLight = false;
-  bool _drawEdges = false;
-
-  bool _rotateLight = false;
-  bool _lightFromCamera = false;
-
-  bool _rainbowColor = false;
-  Color _color = BaseColor.indigo.color;
-
-  bool _fullscreen = false;
 
   Future<Model> _loadModelFromOBJ(String fileName) async {
     String objString = await rootBundle.loadString('assets/models/$fileName');
@@ -84,6 +72,154 @@ class _ModelViewerState extends State<ModelViewer> {
     return Model(faces);
   }
 
+  Model _baseCube() => Model(
+        [
+          Face(
+            [
+              Edge(
+                VectorMath.Vector3(0, 0, 0),
+                VectorMath.Vector3(10, 0, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 0, 0),
+                VectorMath.Vector3(10, 10, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 10, 0),
+                VectorMath.Vector3(0, 10, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 10, 0),
+                VectorMath.Vector3(0, 0, 0),
+              ),
+            ],
+          ),
+          Face(
+            [
+              Edge(
+                VectorMath.Vector3(0, 0, 10),
+                VectorMath.Vector3(10, 0, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 0, 10),
+                VectorMath.Vector3(10, 0, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 0, 0),
+                VectorMath.Vector3(0, 0, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 0, 0),
+                VectorMath.Vector3(0, 0, 10),
+              ),
+            ],
+          ),
+          Face(
+            [
+              Edge(
+                VectorMath.Vector3(0, 10, 10),
+                VectorMath.Vector3(10, 10, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 10, 10),
+                VectorMath.Vector3(10, 0, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 0, 10),
+                VectorMath.Vector3(0, 0, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 0, 10),
+                VectorMath.Vector3(0, 10, 10),
+              ),
+            ],
+          ),
+          Face(
+            [
+              Edge(
+                VectorMath.Vector3(0, 10, 0),
+                VectorMath.Vector3(10, 10, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 10, 0),
+                VectorMath.Vector3(10, 10, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 10, 10),
+                VectorMath.Vector3(0, 10, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 10, 10),
+                VectorMath.Vector3(0, 10, 0),
+              ),
+            ],
+          ),
+          Face(
+            [
+              Edge(
+                VectorMath.Vector3(10, 0, 0),
+                VectorMath.Vector3(10, 0, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 0, 10),
+                VectorMath.Vector3(10, 10, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 10, 10),
+                VectorMath.Vector3(10, 10, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(10, 10, 0),
+                VectorMath.Vector3(10, 0, 0),
+              ),
+            ],
+          ),
+          Face(
+            [
+              Edge(
+                VectorMath.Vector3(0, 0, 10),
+                VectorMath.Vector3(0, 0, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 0, 0),
+                VectorMath.Vector3(0, 10, 0),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 10, 0),
+                VectorMath.Vector3(0, 10, 10),
+              ),
+              Edge(
+                VectorMath.Vector3(0, 10, 10),
+                VectorMath.Vector3(0, 0, 10),
+              ),
+            ],
+          ),
+        ],
+      );
+
+  VectorMath.Vector3 _initialCameraPosition(Model model) {
+    double highestZ = 0;
+
+    for (Face face in model.faces) {
+      for (Edge edge in face.edges) {
+        highestZ = max(highestZ,
+            max(edge.vertices.item1.z.abs(), edge.vertices.item2.z.abs()));
+      }
+    }
+
+    return VectorMath.Vector3(0, 0, -highestZ * 1.5);
+  }
+
+  void _setupCameraAndLight(Model model) {
+    if (this.widget.camera == null)
+      _camera.setInitialPosition(_initialCameraPosition(model));
+    if (this.widget.light == null)
+      _light.setInitialPosition(_camera.position.xyz
+        ..applyQuaternion(VectorMath.Quaternion.euler(10, 10, 10)));
+
+    _camera.setFocusByModel(model);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -96,232 +232,34 @@ class _ModelViewerState extends State<ModelViewer> {
     if (this.widget.objFileName != null) {
       _model = _loadModelFromOBJ(this.widget.objFileName!);
     } else {
-      _model = SynchronousFuture(model ??
-          Model([
-            Face(
-              [
-                Edge(
-                  VectorMath.Vector3(0, 0, 0),
-                  VectorMath.Vector3(10, 0, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 0, 0),
-                  VectorMath.Vector3(10, 10, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 10, 0),
-                  VectorMath.Vector3(0, 10, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 10, 0),
-                  VectorMath.Vector3(0, 0, 0),
-                ),
-              ],
-            ),
-            Face(
-              [
-                Edge(
-                  VectorMath.Vector3(0, 0, 10),
-                  VectorMath.Vector3(10, 0, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 0, 10),
-                  VectorMath.Vector3(10, 0, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 0, 0),
-                  VectorMath.Vector3(0, 0, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 0, 0),
-                  VectorMath.Vector3(0, 0, 10),
-                ),
-              ],
-            ),
-            Face(
-              [
-                Edge(
-                  VectorMath.Vector3(0, 10, 10),
-                  VectorMath.Vector3(10, 10, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 10, 10),
-                  VectorMath.Vector3(10, 0, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 0, 10),
-                  VectorMath.Vector3(0, 0, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 0, 10),
-                  VectorMath.Vector3(0, 10, 10),
-                ),
-              ],
-            ),
-            Face(
-              [
-                Edge(
-                  VectorMath.Vector3(0, 10, 0),
-                  VectorMath.Vector3(10, 10, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 10, 0),
-                  VectorMath.Vector3(10, 10, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 10, 10),
-                  VectorMath.Vector3(0, 10, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 10, 10),
-                  VectorMath.Vector3(0, 10, 0),
-                ),
-              ],
-            ),
-            Face(
-              [
-                Edge(
-                  VectorMath.Vector3(10, 0, 0),
-                  VectorMath.Vector3(10, 0, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 0, 10),
-                  VectorMath.Vector3(10, 10, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 10, 10),
-                  VectorMath.Vector3(10, 10, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(10, 10, 0),
-                  VectorMath.Vector3(10, 0, 0),
-                ),
-              ],
-            ),
-            Face(
-              [
-                Edge(
-                  VectorMath.Vector3(0, 0, 10),
-                  VectorMath.Vector3(0, 0, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 0, 0),
-                  VectorMath.Vector3(0, 10, 0),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 10, 0),
-                  VectorMath.Vector3(0, 10, 10),
-                ),
-                Edge(
-                  VectorMath.Vector3(0, 10, 10),
-                  VectorMath.Vector3(0, 0, 10),
-                ),
-              ],
-            ),
-          ]));
+      _model = SynchronousFuture(model ?? _baseCube());
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onScaleStart: (moveStart) => setState(() => _camera.moveStart(moveStart)),
-      onScaleUpdate: (move) => setState(() => _camera.move(
-          move,
-          _useLight && (_rotateLight || _lightFromCamera) ? _light : null,
-          _lightFromCamera)),
-      onScaleEnd: (moveEnd) => setState(() => _camera.moveEnd(moveEnd)),
-      onDoubleTap: () => setState(() => _fullscreen = !_fullscreen),
-      child: Stack(
-        children: [
-          FutureBuilder<Model>(
-            future: _model,
-            builder: (context, modelSnapshot) {
-              if (modelSnapshot.connectionState == ConnectionState.done) {
-                if (modelSnapshot.hasData) {
-                  _camera.setFocusByModel(modelSnapshot.data!);
+    return FutureBuilder<Model>(
+      future: _model,
+      builder: (context, modelSnapshot) {
+        if (modelSnapshot.connectionState == ConnectionState.done) {
+          if (modelSnapshot.hasData) {
+            _setupCameraAndLight(modelSnapshot.data!);
 
-                  return SizedBox.expand(
-                    child: Center(
-                      child: Transform.translate(
-                        offset: _camera.translation,
-                        child: Transform.scale(
-                          scale: _camera.scale,
-                          child: CustomPaint(
-                            painter: ModelPainter(
-                              camera: _camera,
-                              light: _useLight ? _light : null,
-                              drawEdges: _drawEdges,
-                              model: modelSnapshot.data!,
-                              color: _color,
-                              rainbowColor: _rainbowColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return Center(
-                  child: Text(
-                      'Error loading model\n\n${modelSnapshot.error!.toString()}'),
-                );
-              }
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            },
-          ),
-          if (!_fullscreen)
-            Positioned(
-              top: 24.0,
-              left: 24.0,
-              child: SafeArea(
-                child: CameraLightBar(
-                  camera: _camera,
-                  light: _light,
-                  useLight: _useLight,
-                  onChangedUseLight: (value) =>
-                      setState(() => _useLight = value!),
-                  onReset: () => setState(() => _camera.reset()),
-                ),
-              ),
-            ),
-          if (!_fullscreen)
-            Positioned(
-              bottom: 18.0,
-              left: 18.0,
-              child: SafeArea(
-                child: PropertiesBar(
-                  rotateLight: _rotateLight,
-                  lightFromCamera: _lightFromCamera,
-                  drawEdges: _drawEdges,
-                  useRainbowColor: _rainbowColor,
-                  color: _color,
-                  onChangedRotateLight: (value) => setState(() {
-                    _rotateLight = value!;
-                    if (_rotateLight) _lightFromCamera = false;
-                  }),
-                  onChangedLightFromCamera: _useLight
-                      ? (value) => setState(() {
-                            _lightFromCamera = value!;
-                            if (_lightFromCamera) {
-                              _rotateLight = false;
-                              _light.position.xyz = _camera.position;
-                            }
-                          })
-                      : null,
-                  onChangedDrawEdges: (value) =>
-                      setState(() => _drawEdges = value!),
-                  onChangedUseRainbowColor: (value) =>
-                      setState(() => _rainbowColor = value!),
-                  onChangedColor: (color) => setState(() => _color = color!),
-                ),
-              ),
-            ),
-        ],
-      ),
+            return ModelWrapper(
+              camera: _camera,
+              light: _light,
+              model: modelSnapshot.data!,
+            );
+          }
+          return Center(
+            child: Text(
+                'Error loading model\n\n${modelSnapshot.error!.toString()}'),
+          );
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 }

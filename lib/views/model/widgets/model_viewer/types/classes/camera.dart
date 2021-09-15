@@ -7,9 +7,9 @@ import 'light.dart';
 import 'model.dart';
 
 class Camera {
-  VectorMath.Vector3 position;
-  late VectorMath.Vector3 initialPosition;
-  late VectorMath.Vector3 focusPosition;
+  VectorMath.Vector3 position = VectorMath.Vector3.zero();
+  VectorMath.Vector3 initialPosition = VectorMath.Vector3.zero();
+  VectorMath.Vector3 focusPosition = VectorMath.Vector3.zero();
   double scale = 15.0;
   double initialScale = 15.0;
   Offset translation = Offset.zero;
@@ -18,9 +18,9 @@ class Camera {
 
   ScaleUpdateDetails? _scaleUpdateRun;
 
-  Camera(this.position)
-      : initialPosition = VectorMath.Vector3.copy(position),
-        focusPosition = VectorMath.Vector3.zero();
+  Camera(this.position) {
+    initialPosition.xyz = position.xyz;
+  }
 
   Camera.base() : this(VectorMath.Vector3(100, 100, -100));
 
@@ -28,9 +28,14 @@ class Camera {
       this.focusPosition.xyz..sub(this.position);
 
   void reset() {
-    this.position.xyz = this.initialPosition;
+    this.position.xyz = this.initialPosition.xyz;
     this.scale = this.initialScale;
     this.translation = Offset.zero;
+  }
+
+  void setInitialPosition(VectorMath.Vector3 position) {
+    this.position.xyz = position.xyz;
+    this.initialPosition.xyz = position.xyz;
   }
 
   void setFocusByModel(Model model) {

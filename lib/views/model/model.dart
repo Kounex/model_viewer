@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:model_viewer/views/model/widgets/model_viewer/types/classes/camera.dart';
-import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
 import 'widgets/model_viewer/model_viewer.dart';
 
@@ -18,7 +16,6 @@ class _ModelViewState extends State<ModelView> {
       resizeToAvoidBottomInset: false,
       body: ModelViewer(
         objFileName: 'Sting-Sword-lowpoly.obj',
-        camera: Camera(VectorMath.Vector3(50, -70, -100)),
       ),
     );
   }

@@ -4,12 +4,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as VectorMath;
 
-import 'types/classes/camera.dart';
-import 'types/classes/edge.dart';
-import 'types/classes/face.dart';
-import 'types/classes/light.dart';
-import 'types/classes/model.dart';
-import 'utils/vector.dart';
+import '../types/classes/camera.dart';
+import '../types/classes/edge.dart';
+import '../types/classes/face.dart';
+import '../types/classes/light.dart';
+import '../types/classes/model.dart';
+import '../utils/vector.dart';
 
 class ModelPainter extends CustomPainter {
   final Camera camera;
