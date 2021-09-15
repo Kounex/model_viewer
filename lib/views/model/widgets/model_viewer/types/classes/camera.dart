@@ -66,7 +66,7 @@ class Camera {
 
       if (moveOffset.distanceSquared > 0) {
         VectorMath.Quaternion rotationQ = VectorMath.Quaternion.euler(
-            moveOffset.dx / 100, moveOffset.dy / 100, 0);
+            -moveOffset.dx / 100, -moveOffset.dy / 100, 0);
 
         if (light == null || lightFromCamera)
           this.position.applyQuaternion(rotationQ);
